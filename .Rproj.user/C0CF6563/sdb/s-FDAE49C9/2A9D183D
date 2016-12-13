@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "library(leaflet)\nlibrary(rgdal)\ndns <- \"/Users/Scarlett/Desktop/Projects/twitter/mapping/USA_shapefile\"\nfn <- list.files(dns, pattern = \".shp\", full.names = FALSE)\nfn <- gsub(\".shp\", \"\", fn)\nshape <- readOGR(dns, fn[2])\nshape$Population <- rnorm(52,0,1)\n\ni_popup <- paste0(\"<strong>State: </strong>\", \n                  shape$NAME_1, \n                  \"<br>\",\n                  \"<strong>Love Score: </strong>\", \n                  shape$Population)\n\npal <- colorQuantile(\"PuRd\", NULL, n = 10)    \n            \nleaflet(shape) %>% addTiles() %>%\n  setView(-96, 40, zoom = 4) %>%\n  addPolygons(fillColor = ~pal(shape$Population), \n              fillOpacity = 0.8, \n              color = \"#000000\", \n              weight = 1, popup = i_popup)\n",
+    "created" : 1481516372160.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2875937814",
+    "id" : "2A9D183D",
+    "lastKnownWriteTime" : 1481517037,
+    "last_content_update" : 1481517037011,
+    "path" : "~/Desktop/Projects/twitter/mapping/leaflet.r",
+    "project_path" : "mapping/leaflet.r",
+    "properties" : {
+        "tempName" : "Untitled2"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

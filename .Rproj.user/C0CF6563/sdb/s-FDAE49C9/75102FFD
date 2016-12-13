@@ -1,0 +1,29 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1481514879122.000,
+    "dirty" : false,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "75102FFD",
+    "lastKnownWriteTime" : 4294967302,
+    "last_content_update" : 1481514879122,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "cacheKey" : "9DDDF78",
+        "caption" : "wish.df",
+        "contentUrl" : "grid_resource/gridviewer.html?env=&obj=wish.df&cache_key=9DDDF78",
+        "displayedObservations" : "16041",
+        "environment" : "",
+        "object" : "wish.df",
+        "preview" : "0",
+        "totalObservations" : "16041",
+        "variables" : "1"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_dataframe"
+}

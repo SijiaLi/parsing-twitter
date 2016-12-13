@@ -1,0 +1,21 @@
+{
+    "collab_server" : "",
+    "contents" : "textdata <- wish.df[wish.df$wish.df.text, ]\ntextdata = gsub(\"[[:punct:]]\", \"\", textdata)\ntextdata = gsub(\"[[:digit:]]\", \"\", textdata)\ntextdata = gsub(\"http\\\\w+\", \"\", textdata)\ntextdata = gsub(\"[ \\t]{2,}\", \"\", textdata)\ntextdata = gsub(\"^\\\\s+|\\\\s+$\", \"\", textdata)\n",
+    "created" : 1481514889796.000,
+    "dirty" : true,
+    "encoding" : "",
+    "folds" : "",
+    "hash" : "885351633",
+    "id" : "C2D7C0BB",
+    "lastKnownWriteTime" : 2,
+    "last_content_update" : 1481514891870,
+    "path" : null,
+    "project_path" : null,
+    "properties" : {
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 5,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
