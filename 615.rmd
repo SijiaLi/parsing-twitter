@@ -1,0 +1,158 @@
+---
+title: "Twitter Mining: A Love Map"
+author: "Sijia Li"
+date: "December 12, 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+setwd("/Users/Scarlett/Desktop/Projects/twitter")
+library(ROAuth)
+library(streamR)
+library(tm)
+library(SnowballC)
+library(wordcloud)
+library(cluster)
+library(RColorBrewer)
+library(plyr)
+library(leaflet)
+library(rgdal)
+library(memoise)
+source("latlong2state.r")
+```
+
+### Choosing a hashtag
+I opened up twitter and see a topic trending: Stuff My Stocking With. That's so festive!
+That's when I decide to find out what's on American's mind: All I want for Christmas is...? 
+
+### Streaming and parsing tweets
+```{r, eval = FALSE}
+library(streamR)
+load("my_oauth.Rdata")
+# get tweets from trend "StuffMyStockingWith
+filterStream( file.name="wish.json",
+              track = "StuffMyStockingWith", 
+              locations = c(-125,25,-66,50),  
+              timeout = 600, oauth=my_oauth)
+wish.df <- parseTweets("wish.json")
+save(wish.df, file = "wish.df.rda")
+
+```
+
+And I wrote a function to get rid of the emojis, numbers, urls and convert all words to lower letters.
+
+
+```{r cars}
+load("wish.df.rds")
+clean <- function(x) {
+  x <- iconv(x, "ASCII", "UTF-8", sub="")    # remove all emojis
+  x <- gsub("@\\w+ *", "", x)
+  x <- gsub("#\\w+ *", "", x)
+  x <- gsub("\n", " ", x)
+  x <- gsub("[^a-zA-Z #]","",x)    # "a-zA-Z #" are the things we need, [^a-zA-Z #] are the things to get rid of
+  x <- gsub("https\\w+ *", "", x)
+  x <- tolower(x)
+  return(x)
+}
+cleantext <- clean(wish.df$text)
+```
+
+### Word Cloud
+
+What's on America's mind? After streaming and parsing tweets from hashtag "StuffMyStockingWith", a word cloud can get a straightforward image of what's in these tweets.
+
+```{r pressure}
+wish.Corpus <- Corpus(VectorSource(cleantext))
+wish.Corpus <- tm_map(wish.Corpus, removeWords, stopwords('english'))
+wish.Corpus <- tm_map(wish.Corpus, removeWords, c('just', 'like', 'dont', 'get', 'one', 'amp', stopwords('english')))
+
+wordcloud(wish.Corpus, max.words = 100, random.order = FALSE, colors = brewer.pal(8, "Dark2"))
+
+```
+
+**OMG it's love actually people are talking about! Surprising and expected at the same time.**
+
+
+
+### Creating a Love Map step 1: get the frequncy table
+
+
+Next step, I'm creating a US map to visualize the love score of each state. 
+Well well, love score is just another name for the frequency of people mentioning "love" in their tweets.
+
+The tricky part is, the tweets we captured has longitude and latitude info and that's not what we want. We want a table showing 52 states and another column of frequency. That's what the next chunk of code does: Reversing longtitude and latitude to state name, and return a frequency table.
+
+```{r}
+
+# ====== state-based geo info (frequency) for keyword "love" =======
+source("latlong2state.r")
+library(rgdal)
+
+load("wish.df.rds")
+wish.df$text <- cleantext
+
+pos <- grep("love", wish.df$text)
+love.df <- na.omit(wish.df[pos, c(1,15,37,38)])
+
+love.loc <- (data.frame(love.df$place_lon, love.df$place_lat))
+states <- latlong2state(love.loc)
+
+freq.table <- as.data.frame(table(states))
+
+dns <- "/Users/Scarlett/Desktop/Projects/twitter/USA_shapefile"
+fn <- list.files(dns, pattern = ".shp", full.names = FALSE)
+fn <- gsub(".shp", "", fn)
+shape <- readOGR(dns, fn[2])
+
+shape.state <- as.data.frame(tolower(shape$NAME_1))
+state.freq <- merge(shape.state, freq.table, by.x = "tolower(shape$NAME_1)", by.y = "states", all = TRUE)
+
+head(state.freq)
+
+```
+
+### Creating a Love Map step 2: leaflet, an interactive Love Map
+Here comes the fun part: a love map!
+I made it very much pinky so you can feel it :) Feel free to drag, zoom in/out, and click on the states.
+(It would look much more fun if I got a bigger dataset)
+
+```{r}
+library(leaflet)
+library(rgdal)
+dns <- "/Users/Scarlett/Desktop/Projects/twitter/USA_shapefile"
+fn <- list.files(dns, pattern = ".shp", full.names = FALSE)
+fn <- gsub(".shp", "", fn)
+shape <- readOGR(dns, fn[2])
+shape$Freq <- state.freq$Freq
+
+i_popup <- paste0("<strong>State: </strong>", 
+                  shape$NAME_1, 
+                  "<br>",
+                  "<strong>Love Score: </strong>", 
+                  shape$Freq)
+
+pal <- colorQuantile("PuRd", NULL, n = 5)    
+
+leaflet(shape) %>% addTiles() %>%
+  setView(-95, 37, zoom = 4) %>%
+  addPolygons(fillColor = ~pal(shape$Freq), 
+              fillOpacity = 0.8, 
+              color = "#000000", 
+              weight = 1, popup = i_popup)
+
+```
+
+\n
+\n
+The darker the area is, the more frequent "love" is mentioned in the tweets sent from this area. This is my favorite feature because if I have parsed more data, I can absolutely go further and split the states into smaller parts like cities and counties making the graph more gradient becasue the geo info are reversed from longitudes and latitudes.
+\n
+
+
+
+### Next ups:
+I'm creating a shiny embeded html to present the shiny I'm working on. Big thanks to Megan Fantes for walking me through the code! The shiny app is already published with some minor bugs to fix (if you're reading this then it's still under construction). Big thanks to Anahita for inspiring me to do the word cloud before anyone in class is doing one! I'm sorry I offended your cat!
+
+
+
+
+
